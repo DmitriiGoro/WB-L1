@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <div class="first">
+      First
+      <div class="second">
+        Second
+        <div class="third">
+          Third
+          <div class="fourth">
+            Fourth
+            <div>also fourth</div>
+            <div>and fourth</div>
+            <div class="fifth">
+              Fifth
+              <div class="sixth">
+                Sixth
+                <div class="seventh">
+                  Seventh
+                  <div>seven</div>
+                  <div class="eights">
+                    Eights
+                    <div class="nineth">
+                      Nineth
+                      <div class="tenth">
+                        Tenth
+                        <div class="eleven">Eleven</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script type="module">
+      import { deepTraverse } from "./solution.js";
+      const element = document.body.querySelector(".first");
+
+      deepTraverse(element);
+    </script>
+  </body>
+</html>

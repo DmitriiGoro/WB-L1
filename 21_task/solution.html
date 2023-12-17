@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+      let i = 0;
+      const func = () => {
+        i++;
+        func();
+      };
+
+      // здесь получаем количество вызовов функции с 0 числовой переменной внутри
+      try {
+        func();
+      } catch (e) {
+        console.log(`The callstack size is ${i}`);
+      }
+
+      let j = 0;
+      const secondFunc = () => {
+        let a = j + 1;
+        let b = a + 1;
+        j++;
+
+        secondFunc();
+      };
+
+      // здесь получаем количество вызовов функции с 2 числовыми переменными внутри
+      try {
+        secondFunc();
+      } catch (e) {
+        console.log(`The callstack size is ${j} calls`);
+      }
+
+      // используем формулу размерФункции = N + K * (вес переменной), где N - 1-ая переменная, K - количество объявленных переменных
+      // внутри функции
+      // тогда размер коллстека обозначим за X, и он будет равен
+      // X = размерФункции * число вызовов функции
+      // составим систему уравнений
+      // X = размерФункции_1 * i
+      // X = размерФункции_2 * j, где i и j количество вызовов 1-ой и 2-ой функций соответственно
+      // тогда имеем
+      // (N + 0 * 8) * i = (N + 2 * 8) * j, где 8 - это вес числовой переменной (8 байт)
+
+      const N = Math.round((16 * j) / (i - j));
+      // используя 1-ую формулу (строка 43) получим
+      const X = N * i;
+
+      console.log(`The callstack size is ${X} bytes`);
+    </script>
+    Safari: 12776680 bytes <br />
+    Chrome: 738742 bytes <br />
+    Opera: 1101120 bytes <br />
+    Firefox: 1830312 bytes
+  </body>
+</html>

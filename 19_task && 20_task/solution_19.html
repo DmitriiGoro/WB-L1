@@ -1,0 +1,258 @@
+<html>
+  <title>JSONP</title>
+  <head>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="widget">
+      <ul class="widget__list"></ul>
+      <div class="loading-bar"></div>
+    </div>
+    <script>
+      const countTotalVolume = () => {
+        // если общий объем уже посчитан, выходим из функции
+        if (window.localStorage.getItem("totalVolume")) {
+          return;
+        }
+        let totalVolume = 0;
+        const localStorageCopy = {};
+        // копируем элементы из localStorage, чтобы не потерять их
+        for (let i = 0; i < window.localStorage.length; i++) {
+          const key = window.localStorage.key(i);
+          const value = window.localStorage.getItem(key);
+          localStorageCopy[key] = value;
+        }
+        // заполняем localStorage
+        try {
+          for (let i = 0; i < 1000000; i++) {
+            window.localStorage.setItem(i, i);
+          }
+        } catch (e) {
+          // после получения ошибки об отсутствии свободного места в localStorage подсчитываем общий вес элементов
+          for (let j = 0; j < window.localStorage.length; j++) {
+            const key = window.localStorage.key(j);
+            const element = window.localStorage.getItem(j);
+
+            totalVolume +=
+              new TextEncoder().encode(key).length +
+              new TextEncoder().encode(element).length;
+          }
+        }
+        // очищаем localStorage от "тестовых" элементов
+        window.localStorage.clear();
+        // возвращаем исходные данные в localStorage
+        for (const key in localStorageCopy) {
+          window.localStorage.setItem(key, localStorageCopy[key]);
+        }
+
+        window.localStorage.setItem("totalVolume", totalVolume);
+      };
+
+      countTotalVolume();
+    </script>
+
+    <script type="text/javascript">
+      // widgetList - элемент ul
+      // updateInterval - время обновления контента (если разница текущего времени currTime и времени последнего обновления меньше,
+      // чем updateInterval, то загружаем контент из localStorage, иначе очищаем localStorage и загружаем весь контент заново )
+      const widgetList = document.body.querySelector(".widget__list");
+      const updateInterval = 3600000;
+      const lastUpdate = Number(window.localStorage.getItem("lastUpdate"));
+      const currTime = Date.now();
+
+      if (
+        window.localStorage.length > 0 &&
+        currTime - lastUpdate < updateInterval
+      ) {
+        for (let i = 0; i < window.localStorage.length; i++) {
+          const elementKey = window.localStorage.getItem(i);
+          const element = JSON.parse(elementKey);
+          // ключ нужного нам элемента из стора имеет числовое значение (i в данном случае). Если элемента с таким ключом нет,
+          // пропускаем итерацию
+          if (!element) {
+            continue;
+          }
+          const li = makeListItem(element);
+          widgetList.append(li);
+        }
+
+        const additionalWeight =
+          computeWeight("count", window.localStorage.getItem("count")) +
+          computeWeight(
+            "lastUpdate",
+            window.localStorage.getItem("lastUpdate")
+          ) +
+          computeWeight(
+            "lastOffset",
+            window.localStorage.getItem("lastOffset")
+          );
+
+        console.log(
+          `Total volume: ${window.localStorage.getItem(
+            "totalVolume"
+          )} bytes, now used: ${
+            Number(window.localStorage.getItem("usedVolume")) + additionalWeight
+          } bytes`
+        );
+      } else {
+        window.localStorage.clear();
+      }
+      // создание начального скрипта, скачивающего контент через API
+      const script = document.createElement("SCRIPT");
+      const token =
+        "173fa244173fa244173fa2446f14293e761173f173fa24472479d30febc6cf6dfa8ba48";
+      let offset = Number(window.localStorage.getItem("lastOffset")) || 0;
+      let count = 10;
+
+      const url = new URL(
+        `https://api.vk.com/method/wall.get?owner_id=-1&v=5.131&access_token=${token}&count=${count}&offset=${offset}&callback=callbackFunc`
+      );
+      script.src = url.href;
+
+      document.getElementsByTagName("head")[0].appendChild(script);
+
+      let scrollAdded = false;
+
+      // функция callback, вызываемая после выполнения скрипта
+      function callbackFunc(result) {
+        const { items, count } = result.response;
+        // добавляем время последнего добавление контента, значения сдвига и общее количество постов count
+        const curTime = Date.now();
+        window.localStorage.setItem("count", count);
+        window.localStorage.setItem("lastUpdate", curTime);
+        window.localStorage.setItem("lastOffset", offset);
+
+        const additionalWeight =
+          computeWeight("count", count) +
+          computeWeight("lastUpdate", curTime) +
+          computeWeight("lastOffset", offset);
+
+        let i = 0;
+        for (const item of items) {
+          const li = makeListItem(item);
+          // offset + i++ - индекс нового элемента, добавляемого в стор
+          storeElement(item, offset + i++);
+          widgetList.append(li);
+        }
+
+        console.log(
+          `Total volume: ${window.localStorage.getItem(
+            "totalVolume"
+          )} bytes, now used: ${
+            Number(window.localStorage.getItem("usedVolume")) + additionalWeight
+          } bytes`
+        );
+
+        if (!scrollAdded) {
+          widget.addEventListener("scroll", onScroll);
+          scrollAdded = true;
+        }
+      }
+
+      // delta - разница, на которую увеличивается сдвиг (offset)
+      const delta = 10;
+      let updateScript;
+
+      // функция, создающая новый скрипт для скачивания следующей порции данных
+      function update() {
+        offset += delta;
+        const count = window.localStorage.getItem("count");
+        // если значение offset больше общего количества постов, перестаем делать запросы
+        if (count && offset > count) {
+          return;
+        }
+
+        // убираем скрипт со страницы, если он уже был добавлен
+        if (updateScript) {
+          updateScript.remove();
+        }
+        updateScript = document.createElement("SCRIPT");
+
+        url.searchParams.set("offset", offset);
+
+        updateScript.src = url.href;
+
+        document.body.append(updateScript);
+      }
+
+      // функция создания поста
+      function makeListItem(element) {
+        const { text, date } = element;
+        const li = document.createElement("li");
+        li.classList.add("widget__list-item");
+        const dateObj = new Date(date * 1000);
+
+        li.innerHTML = `
+                    <div>
+                      <p>${text}</p>
+                      <span>${dateObj.getDate()}-${
+          dateObj.getMonth() + 1
+        }-${dateObj.getFullYear()}</span>
+                    </div>`;
+
+        return li;
+      }
+
+      function computeWeight(key, value) {
+        return (
+          new TextEncoder().encode(key).length +
+          new TextEncoder().encode(value).length
+        );
+      }
+
+      // функция сохранения данных в localStorage
+      function storeElement(element, index) {
+        // если localStorage заполнен, то удаляем первые элементы до тех пор, пока не освободится место для нового
+        try {
+          const { text, date } = element;
+
+          const stringifiedElement = JSON.stringify({ text, date });
+
+          const weight = computeWeight(index, stringifiedElement);
+
+          window.localStorage.setItem(
+            "usedVolume",
+            Number(window.localStorage.getItem("usedVolume")) + weight
+          );
+
+          window.localStorage.setItem(index, stringifiedElement);
+        } catch (e) {
+          console.log(e);
+
+          let firstElementKey = window.localStorage.key(current);
+
+          window.localStorage.removeItem(firstElementKey);
+          storeElement(element, index);
+        }
+      }
+
+      let loading = false;
+      const widget = document.body.querySelector(".widget");
+      const loadingBar = document.body.querySelector(".loading-bar");
+
+      function onScroll() {
+        const { lastElementChild: lastChild } = widgetList;
+        const { top: lastChildTop } = lastChild.getBoundingClientRect();
+        const { bottom: widgetBottom } = widget.getBoundingClientRect();
+        const ms = 1000;
+        // если нижний край widget пересек границу последнего загруженного элемента во время скролла, начинаем загрузку
+        // loading - флаг того, что загрузка началась. Если загрузка уже идет, то ничего не делаем
+        if (lastChildTop < widgetBottom && !loading) {
+          let timeout;
+          loadingBar.style.display = "block";
+
+          (function () {
+            clearTimeout(timeout);
+
+            loading = true;
+            timeout = setTimeout(() => {
+              update();
+              loading = false;
+              loadingBar.style.display = "";
+            }, ms);
+          })();
+        }
+      }
+    </script>
+  </body>
+</html>

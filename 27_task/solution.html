@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      .container {
+        width: 150px;
+        height: 150px;
+        background-image: linear-gradient(124deg, #e8fcf2 0%, #e2f4ff 100%);
+        border-radius: 10px;
+        margin-bottom: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container"></div>
+    <button class="activate">Activate</button>
+    <script type="module">
+      import { addAnimation } from "./solution.js";
+      const button = document.querySelector(".activate");
+      const container = document.querySelector(".container");
+
+      button.onclick = () => addAnimation(container);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,67 @@
+:root {
+  --grey-skeleton: #f5f6f8;
+  --grey-middle: #e0e4eb;
+}
+
+.widget {
+  width: 600px;
+  height: 400px;
+  position: relative;
+  left: 50%;
+  top: 50%;
+  border: 1px solid grey;
+  transform: translate(-50%, -50%);
+  border-radius: 8px;
+  box-shadow: 1px 1px 10px 1px grey;
+  overflow: scroll;
+  padding: 20px;
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+}
+
+.widget__list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0;
+}
+
+.widget__list-item {
+  margin: 0 auto;
+  padding: 10px 20px;
+  list-style-type: none;
+  border: 1px solid grey;
+  border-radius: 8px;
+  max-width: 400px;
+}
+
+.loading-bar {
+  animation-duration: 1.5s;
+  animation-fill-mode: forwards;
+  animation-iteration-count: infinite;
+  animation-name: backgroundMovement;
+  animation-timing-function: linear;
+  background: var(--grey-skeleton);
+  background: linear-gradient(
+    267.58deg,
+    var(--grey-middle) 0%,
+    var(--grey-skeleton) 80%,
+    var(--grey-middle) 100%
+  );
+  background-size: 200%;
+  border-radius: 2px;
+  height: 20px;
+  width: 100%;
+  position: absolute;
+  left: 0;
+  display: none;
+}
+
+@keyframes backgroundMovement {
+  0% {
+    background-position: 100%;
+  }
+  100% {
+    background-position: -100%;
+  }
+}

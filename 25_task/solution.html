@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <div class="container"></div>
+    <script>
+      const container = document.querySelector(".container");
+
+      function makeElement(container) {
+        const element = document.createElement("div");
+        element.innerHTML = "Hello, I'm element";
+
+        container.append(element);
+
+        element.style.backgroundImage =
+          "linear-gradient(92.32deg,#f4f5fd 47.03%,#e9f2ff 100.95%)";
+      }
+
+      makeElement(container);
+    </script>
+  </body>
+</html>

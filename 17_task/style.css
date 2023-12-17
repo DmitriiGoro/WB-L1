@@ -1,0 +1,26 @@
+.map {
+  width: 150px;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+}
+
+.map__list {
+  padding: 10px;
+}
+
+.map__input {
+  width: 100%;
+  padding: 5px;
+  font-size: 14px;
+}
+
+.map__list-element {
+  list-style: none;
+  padding: 5px;
+  border: 1px solid grey;
+  width: 100%;
+  margin-top: 5px;
+  cursor: pointer;
+  font-size: 13px;
+}

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      button {
+        margin-left: 10px;
+      }
+      .purchase {
+        margin-bottom: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="cart">
+      <div class="purchase" data-purchase="1">
+        <span>Покупка 1</span><button class="purchase__button">Add</button>
+      </div>
+      <div class="purchase" data-purchase="2">
+        <span>Покупка 2</span><button class="purchase__button">Add</button>
+      </div>
+      <div class="purchase" data-purchase="3">
+        <span>Покупка 3</span><button class="purchase__button">Add</button>
+      </div>
+    </div>
+    <template id="template">
+      <div class="purchase" data-purchase>
+        <span></span><button class="purchase__button">Add</button>
+      </div>
+    </template>
+
+    <script type="module">
+      import { useTemplate } from "./solution.js";
+
+      const cart = document.body.querySelector(".cart");
+
+      cart.addEventListener("click", (event) => {
+        const button = event.target.closest(".purchase__button");
+
+        if (button) {
+          const purchase = button.closest(".purchase");
+          const span = purchase.querySelector("span");
+          const purchaseText = span.textContent;
+
+          useTemplate(purchaseText, cart);
+        }
+      });
+    </script>
+  </body>
+</html>

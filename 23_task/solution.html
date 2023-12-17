@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="./style.css" />
+    <title>Document</title>
+  </head>
+  <body>
+    <div class="wrapper">
+      <input type="password" />
+      <div class="password__info">
+        <span class="password__icon"></span>
+        <span class="password__text"></span>
+      </div>
+      <div class="password__recs">
+        Ваш пароль недостаточно сложный, попробуйте добавить следующие символы:
+        <div class="password__symbols"></div>
+      </div>
+    </div>
+    <script>
+      const ratingColor = {
+        easy: "red",
+        medium: "yellow",
+        hard: "green",
+      };
+
+      const input = document.body.querySelector("input");
+      const passwordIcon = document.body.querySelector(".password__icon");
+      const passwordText = document.body.querySelector(".password__text");
+      const passwordRecs = document.body.querySelector(".password__recs");
+      const passwordSymbols = document.body.querySelector(".password__symbols");
+
+      document.addEventListener("change", (event) => {
+        const input = event.target.closest("input");
+
+        if (!input) {
+          return;
+        }
+        const password = input.value;
+
+        // если поле для ввода пустое, убираем информацию о его сложности
+        if (!password.length) {
+          passwordText.innerHTML = "";
+          passwordIcon.style.background = "";
+          passwordRecs.style.display = "";
+          return;
+        }
+
+        const { text, recomendations } = checkPassword(password);
+
+        // если пароль уровня "easy" или "medium", выдаем рекомендации по его улучшению
+        if (text !== "hard") {
+          passwordSymbols.innerHTML = "";
+          for (const rec in recomendations) {
+            const span = document.createElement("span");
+            span.innerHTML = recomendations[rec];
+            passwordSymbols.append(span);
+          }
+          passwordRecs.style.display = "block";
+        } else {
+          passwordRecs.style.display = "";
+        }
+
+        passwordText.innerHTML = text;
+        passwordIcon.style.background = `${ratingColor[text]}`;
+      });
+
+      function checkPassword(password) {
+        const symbols = {
+          s_letters: "qwertyuiopasdfghjklzxcvbnm",
+          b_letters: "QWERTYUIOPLKJHGFDSAZXCVBNM",
+          digits: "0123456789",
+          specials: "!@#$%^&*()_-+=\|/.,:;[]{}",
+        };
+
+        const regExps = {
+          s_letters: /[qwertyuiopasdfghjklzxcvbnm]/,
+          b_letters: /[QWERTYUIOPLKJHGFDSAZXCVBNM]/,
+          digits: /[0123456789]/,
+          specials: /[\!\@\#\$\%\^\&\*\(\)\_\-\+\=\\\|\/\.\,\:\;\[\]\{\}]/,
+        };
+
+        const { s_letters, b_letters, digits, specials } = regExps;
+
+        const passedRegExps = {
+          s_letters: false, // Есть ли в пароле буквы в нижнем регистре
+          b_letters: false, // Есть ли в пароле буквы в верхнем регистре
+          digits: false, // Есть ли в пароле цифры
+          specials: false, // Есть ли в пароле спецсимволы
+        };
+
+        /* Проверяем каждый символ пароля на принадлежность к тому или иному типу */
+        if (s_letters.test(password)) {
+          passedRegExps.s_letters = true;
+        }
+        if (b_letters.test(password)) {
+          passedRegExps.b_letters = true;
+        }
+        if (digits.test(password)) {
+          passedRegExps.digits = true;
+        }
+        if (specials.test(password)) {
+          passedRegExps.specials = true;
+        }
+
+        let rating = 0;
+        let text = "";
+        const recomendations = {};
+
+        for (const passedReg in passedRegExps) {
+          if (passedRegExps[passedReg]) {
+            rating++;
+          } else {
+            // список символов, которых нет в пароле
+            recomendations[passedReg] = symbols[passedReg];
+          }
+        }
+
+        /* Далее идёт анализ длины пароля и полученного рейтинга, и на основании этого готовится текстовое описание сложности пароля */
+        if (password.length < 6 && rating < 3) text = "easy";
+        else if (password.length < 6 && rating >= 3) text = "medium";
+        else if (password.length >= 8 && rating < 3) text = "medium";
+        else if (password.length >= 8 && rating >= 3) text = "hard";
+        else if (password.length >= 6 && rating == 1) text = "easy";
+        else if (password.length >= 6 && rating > 1 && rating < 4)
+          text = "medium";
+        else if (password.length >= 6 && rating == 4) text = "hard";
+
+        return {
+          recomendations,
+          text,
+        };
+      }
+    </script>
+  </body>
+</html>
